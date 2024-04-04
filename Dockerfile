@@ -1,5 +1,6 @@
 FROM php:8.3.3-cli-bullseye
-WORKDIR /usr/src/phanalist
+WORKDIR /usr/src/
+RUN curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
+
 COPY . .
-RUN chmod +x ./release/x86_64-unknown-linux-musl/phanalist
-RUN ./release/x86_64-unknown-linux-musl/phanalist -h
+ENTRYPOINT["/usr/src/phanalist"]
