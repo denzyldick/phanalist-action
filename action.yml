@@ -1,0 +1,15 @@
+name: 'Phanalist'
+description: 'Performant static analyzer for PHP, which is extremely easy to use. It helps you catch common mistakes in your PHP code.'
+inputs:
+  src: 
+    description: 'Path to project sources.'
+    required: true
+    default: '.src/'
+outputs:
+  time:
+    description: 'The time we greeted you'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.src }}
