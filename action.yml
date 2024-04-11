@@ -1,8 +1,9 @@
 name: 'Phanalist'
 description: 'Performant static analyzer for PHP, which is extremely easy to use. It helps you catch common mistakes in your PHP code.'
 author: Denzyl Dick
-icon: alert-triangle
-color: purple
+branding:
+      icon: alert-triangle
+      color: purple
 inputs:
   src: 
     description: 'Path to project sources.'
