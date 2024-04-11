@@ -6,14 +6,13 @@ inputs:
     description: 'Path to project sources.'
     required: true
     default: '.src/'
-jobs:
-  install-phanalist:
-    runs: ubuntu-latest
-    steps:
-      -  uses: actions/checkout@v4
-      -  name: Download phanalist.
-         run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
-      -  name: Display version
-         run: /home/runner/phanalist --help
-      -  name: Running phanalist
-         run: /home/runner/phanalist --src=${GITHUB_WORKSPACE}${INPUT_SRC} 
+runs:
+  using: 'composite'
+  steps:
+    -  uses: actions/checkout@v4
+    -  name: Download phanalist.
+       run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
+    -  name: Display version
+       run: /home/runner/phanalist --help
+    -  name: Running phanalist
+       run: /home/runner/phanalist --src=${GITHUB_WORKSPACE}${INPUT_SRC} 
