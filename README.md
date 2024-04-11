@@ -4,7 +4,7 @@ Performant static analyzer for PHP, which is extremely easy to use. It helps you
 It helps you improve your PHP code.
 
 #### Example
-![Example](docs/branding/example.gif)
+![Example](https://github.com/denzyldick/phanalist/blob/main/docs/branding/example.gif)
 
 ### Usage
 ```yaml
