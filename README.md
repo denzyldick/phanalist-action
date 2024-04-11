@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/denzyldick/phanalist/main/docs/branding/banner-cropped.png"/>
 
-Performant is an extremely easy-to-use static analyzer for PHP that helps you catch common mistakes in your code.
+Performant static analyzer for PHP, which is extremely easy to use. It helps you catch common mistakes in your PHP code.
 ### Usage
 ```yaml
 name: "Phanalist GitHub action."
