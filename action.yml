@@ -1,18 +1,19 @@
 name: 'Phanalist'
 description: 'Performant static analyzer for PHP, which is extremely easy to use. It helps you catch common mistakes in your PHP code.'
+author: Denzyl Dick
 inputs:
   src: 
     description: 'Path to project sources.'
     required: true
     default: '.src/'
-outputs:
-  time:
-    description: 'The time we greeted you'
 jobs:
   install-phanalist:
     runs-on: ubuntu-latest
     steps:
+      -  uses: actions/checkout@v4
       -  name: Download phanalist.
          run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
       -  name: Display version
-         run: ~./phanalist -v
+         run: /home/runner/phanalist --help
+      -  name: Running phanalist
+         run: /home/runner/phanalist --src=${GITHUB_WORKSPACE}${INPUT_SRC} 
