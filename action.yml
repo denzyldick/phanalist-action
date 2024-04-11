@@ -11,8 +11,11 @@ runs:
   steps:
     -  uses: actions/checkout@v4
     -  name: Download phanalist.
+       bash: shell    
        run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
     -  name: Display version
+       bash: shell
        run: /home/runner/phanalist --help
     -  name: Running phanalist
+       bash: shell
        run: /home/runner/phanalist --src=${GITHUB_WORKSPACE}${INPUT_SRC} 
