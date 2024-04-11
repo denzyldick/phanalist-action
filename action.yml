@@ -8,8 +8,11 @@ inputs:
 outputs:
   time:
     description: 'The time we greeted you'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - ${{ inputs.src }}
+jobs:
+  install-phanalist:
+    runs-on: ubuntu-latest
+    steps:
+      -  name: Download phanalist.
+         run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
+      -  name: Display version
+         run: ~./phanalist -v
