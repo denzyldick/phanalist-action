@@ -1,6 +1,11 @@
 <img src="https://raw.githubusercontent.com/denzyldick/phanalist/main/docs/branding/banner-cropped.png"/>
 
 Performant static analyzer for PHP, which is extremely easy to use. It helps you catch common mistakes in your PHP code.
+It helps you improve your PHP code.
+
+#### Example
+![Example](docs/branding/example.gif)
+
 ### Usage
 ```yaml
 name: "Phanalist GitHub action."
