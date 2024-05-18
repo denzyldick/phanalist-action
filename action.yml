@@ -20,6 +20,7 @@ runs:
       shell: bash
       run: /home/runner/phanalist --help
     - name: Running phanalist
+      continue-on-error: true
       shell: bash
       run: /home/runner/phanalist --src=${GITHUB_WORKSPACE}${INPUT_SRC} --output-format=sarif | tee result.sarif
     - name: Upload SARIF file
