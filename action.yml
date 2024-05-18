@@ -1,24 +1,28 @@
-name: 'Phanalist'
-description: 'Performant static analyzer for PHP, which is extremely easy to use. It helps you catch common mistakes in your PHP code.'
+name: "Phanalist"
+description: "Performant static analyzer for PHP, which is extremely easy to use. It helps you catch common mistakes in your PHP code."
 author: Denzyl Dick
 branding:
-      icon: alert-triangle
-      color: purple
+  icon: alert-triangle
+  color: purple
 inputs:
-  src: 
-    description: 'Path to project sources.'
+  src:
+    description: "Path to project sources."
     required: true
-    default: '.src/'
+    default: ".src/"
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    -  uses: actions/checkout@v4
-    -  name: Download phanalist.
-       shell: bash    
-       run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
-    -  name: Display version
-       shell: bash
-       run: /home/runner/phanalist --help
-    -  name: Running phanalist
-       shell: bash
-       run: /home/runner/phanalist --src=${GITHUB_WORKSPACE}${INPUT_SRC} 
+    - uses: actions/checkout@v4
+    - name: Download phanalist.
+      shell: bash
+      run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
+    - name: Display version
+      shell: bash
+      run: /home/runner/phanalist --help
+    - name: Running phanalist
+      shell: bash
+      run: /home/runner/phanalist --src=${GITHUB_WORKSPACE}${INPUT_SRC} --output-format=sarif | tee result.sarif
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: results.sarif
