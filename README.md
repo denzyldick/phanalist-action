@@ -26,7 +26,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: denzyldick/phanalist-action@v0.0.1
+      - uses: denzyldick/phanalist-action@v0.1.22
         with:
           src: /app
 ```
