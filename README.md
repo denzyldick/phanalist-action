@@ -6,6 +6,18 @@
 
 ---
 
+### Installation
+
+Paste this step into your existing workflow:
+
+```yaml
+      - uses: denzyldic/phanalist-action@v0.1.22
+        with:
+          src: /app
+```
+
+---
+
 ### Usage
 
 ```yaml
