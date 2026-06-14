@@ -1,28 +1,25 @@
 <img src="https://raw.githubusercontent.com/denzyldic/phanalist/main/docs/branding/banner-cropped.png"/>
 
-Performant static analyzer for PHP, which is extremely easy to use. It helps you catch common mistakes in your PHP code.
-It helps you improve your PHP code.
+[![CI](https://github.com/denzyldic/phanalist-action/actions/workflows/ci.yml/badge.svg)](https://github.com/denzyldic/phanalist-action/actions)
 
-#### Example
+> GitHub Action for [Phanalist](https://github.com/denzyldic/phanalist) — a performant static analyzer for PHP, written in Rust. Catches common mistakes and enforces best practices with zero configuration required.
 
-![Example](https://github.com/denzyldic/phanalist/blob/main/docs/branding/example.gif)
+---
 
 ### Usage
 
 ```yaml
-name: "Phanalist GitHub action."
+name: Phanalist
 on:
   push:
-    branches:
-      - "main"
+    branches: [main]
+  pull_request:
+    branches: [main]
 jobs:
-  install-phanalist:
+  analyze:
     runs-on: ubuntu-latest
     permissions:
-      # required for all workflows
       security-events: write
-      # only required for workflows in private repositories
-      actions: read
       contents: read
     steps:
       - uses: actions/checkout@v4
@@ -31,33 +28,48 @@ jobs:
           src: /app
 ```
 
+The `src` input is the path to your project sources (relative to workspace root).
+
+### What it does
+
+1. Downloads the latest `phanalist` binary
+2. Runs `phanalist` with SARIF output
+3. Uploads results as a SARIF file for GitHub code scanning
+
+Results appear under the **Security** tab → **Code scanning** in your repository.
+
 ### Rules
 
-The following rules are available:
-
-|                                           Code                                           | Name                                           | Default options                                                                                              |
-| :--------------------------------------------------------------------------------------: | :--------------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
-|                                          E0000                                           | Example rule                                   |                                                                                                              |
-|  [E0001](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e1/e1.md)  | Opening tag position                           |                                                                                                              |
-|  [E0002](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e2/e2.md)  | Empty catch                                    |                                                                                                              |
-|  [E0003](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e3/e3.md)  | Method modifiers                               |                                                                                                              |
-|   [E0004](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e4.md)    | Uppercase constants                            |                                                                                                              |
-|   [E0005](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e5.md)    | Capitalized class name                         |                                                                                                              |
-|  [E0006](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e6/e6.md)  | Property modifiers                             |                                                                                                              |
-|  [E0007](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e7/e7.md)  | Method parameters count                        | check_constructor: true, max_parameters: 5                                                                   |
-|  [E0008](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e8/e8.md)  | Return type signature                          |                                                                                                              |
-|  [E0009](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e9/e9.md)  | Cyclomatic complexity                          | max_complexity: 10                                                                                           |
-| [E0010](https://github.com/denzyldic/phanalist/blob/main/src/rules/examples/e10/e10.md) | Npath complexity                               | max_complexity: 200                                                                                          |
-|                                          E0012                                           | Service compatibility with Shared Memory Model | include_namespaces: ["App\\Service\\"],<br/>exclude_namespaces: [],<br/>reset_interfaces: ["ResetInterface"] |
-
-Adding a new rule is a simple task, and [this tutorial](./docs/adding_new_rule.md) explains how to do it.
-
-### Articles
-
-Read a series of chapters on [https://dev.to/denzyldic](https://dev.to/denzyldic) to understand the project's internals. It
-is a great, easy-to-read introduction to this project.
-
-1. [Write your static analyzer for PHP.](https://dev.to/denzyldic/the-beginning-of-my-php-static-analyzer-in-rust-5bp8)
-2. [How I made it impossible to write spaghetti code.](https://dev.to/denzyldic/how-i-made-it-impossible-to-write-spaghetti-code-dg4)
-3. [Detecting spaghetti code in AST of a PHP source code.](https://dev.to/denzyldic/traversing-an-ast-of-php-source-code-2kee)
-4. [Getting Symfony app ready for Swoole, RoadRunner, and FrankenPHP (no AI involved).](https://dev.to/sergiid/getting-symfony-app-ready-for-swoole-roadrunner-and-frankenphp-no-ai-involved-2d0g)
+| Code | Name | Options |
+| :--: | :--- | :------ |
+| E0000 | Example rule | |
+| E0001 | Opening tag position | |
+| E0002 | Empty catch | |
+| E0003 | Method modifiers | |
+| E0004 | Uppercase constants | |
+| E0005 | Capitalized class name | |
+| E0006 | Property modifiers | |
+| E0007 | Method parameters count | `check_constructor: true`, `max_parameters: 5` |
+| E0008 | Return type signature | |
+| E0009 | Cyclomatic complexity | `max_complexity: 10` |
+| E0010 | Npath complexity | `max_paths: 200` |
+| E0011 | Detect error suppression symbol (`@`) | |
+| E0012 | Service compatibility with Shared Memory Model | `include_namespaces`, `exclude_namespaces`, `reset_interfaces` |
+| E0013 | Private method not being used | |
+| E0014 | Law of Demeter | |
+| E0015 | Lack of Cohesion of Methods (LCOM4) | `threshold: 1` |
+| E0016 | Cognitive complexity | `max_complexity: 15` |
+| E0017 | Coupling Between Objects (CBO) | `max_coupling: 10` |
+| E0018 | Weighted Methods per Class (WMC) | `max_wmc: 50` |
+| E0019 | Response For a Class (RFC) | `max_rfc: 50` |
+| E0020 | Depth of Inheritance Tree (DIT) | `max_depth: 4` |
+| E0021 | Number of Children (NOC) | `max_children: 15` |
+| E0022 | Afferent and Efferent Coupling (Ca/Ce) | `max_ca: 20`, `max_ce: 20` |
+| E0023 | Instability, Abstractness, Distance (I/A/D) | `max_instability: 0.8`, `max_abstractness: 0.8`, `max_distance: 0.5` |
+| E0024 | Lines of Code per Method | `max_loc: 30` |
+| E0025 | Lines of Code per File | `max_loc: 500` |
+| E0026 | Comment Ratio | `min_ratio: 0.1`, `max_ratio: 0.5` |
+| E0027 | God Class (Brain Class) | `max_methods: 15`, `max_fields: 10` |
+| E0028 | Data Class | `max_getter_setter_ratio: 0.7`, `min_methods: 3` |
+| E0029 | Fan-in / Fan-out | `max_fan_out: 10`, `max_fan_in: 20` |
+| E0030 | Cyclomatic Complexity Density | `max_density: 0.3` |
