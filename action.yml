@@ -15,7 +15,7 @@ runs:
     - uses: actions/checkout@v4
     - name: Download phanalist.
       shell: bash
-      run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
+      run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldic/phanalist/main/bin/init.sh | sh
     - name: Display version
       shell: bash
       run: /home/runner/phanalist --help
