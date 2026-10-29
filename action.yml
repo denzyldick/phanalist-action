@@ -9,13 +9,17 @@ inputs:
     description: "Path to project sources."
     required: true
     default: ".src/"
+  include_rule_descriptions:
+    description: "Append each rule's full documentation to inline pull request annotations."
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v4
     - name: Download phanalist.
       shell: bash
-      run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldic/phanalist/main/bin/init.sh | sh
+      run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
     - name: Display version
       shell: bash
       run: /home/runner/phanalist --help
@@ -23,7 +27,32 @@ runs:
       continue-on-error: true
       shell: bash
       run: /home/runner/phanalist --src=${GITHUB_WORKSPACE}${INPUT_SRC} --output-format=sarif | tee result.sarif
+    - name: Prepare SARIF
+      shell: bash
+      env:
+        INCLUDE_RULE_DESCRIPTIONS: ${{ inputs.include_rule_descriptions }}
+      run: |
+        if [ "${INCLUDE_RULE_DESCRIPTIONS}" = "true" ]; then
+          jq '
+            .runs[] |= (
+              . as $run
+              | .results |= map(
+                  . as $result
+                  | ($run.tool.driver.rules[] | select(.id == $result.ruleId) | .fullDescription.text) as $desc
+                  | if ($desc // "") == "" then .
+                    elif (.message.text // "" | contains($desc)) then .
+                    else
+                      .message as $message
+                      | .message.text = (($message.text // "") + "\n\n" + $desc)
+                      | .message.markdown = (($message.markdown // $message.text // "") + "\n\n" + $desc)
+                    end
+                )
+            )
+          ' result.sarif > results.sarif
+        else
+          cp result.sarif results.sarif
+        fi
     - name: Upload SARIF file
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
-        sarif_file: ${{ GITHUB_WORKSPACE }}/results.sarif
+        sarif_file: results.sarif

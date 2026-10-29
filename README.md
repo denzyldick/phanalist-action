@@ -1,8 +1,8 @@
-<img src="https://raw.githubusercontent.com/denzyldic/phanalist/main/docs/branding/banner-cropped.png"/>
+<img src="https://raw.githubusercontent.com/denzyldick/phanalist/main/docs/branding/banner-cropped.png"/>
 
-[![CI](https://github.com/denzyldic/phanalist-action/actions/workflows/ci.yml/badge.svg)](https://github.com/denzyldic/phanalist-action/actions)
+[![CI](https://github.com/denzyldick/phanalist-action/actions/workflows/ci.yml/badge.svg)](https://github.com/denzyldick/phanalist-action/actions)
 
-> GitHub Action for [Phanalist](https://github.com/denzyldic/phanalist) — a performant static analyzer for PHP, written in Rust. Catches common mistakes and enforces best practices with zero configuration required.
+> GitHub Action for [Phanalist](https://github.com/denzyldick/phanalist) — a performant static analyzer for PHP, written in Rust. Catches common mistakes and enforces best practices with zero configuration required.
 
 ---
 
@@ -11,7 +11,7 @@
 Paste this step into your existing workflow:
 
 ```yaml
-      - uses: denzyldic/phanalist-action@v0.1.22
+      - uses: denzyldick/phanalist-action@v0.1.22
         with:
           src: /app
 ```
@@ -35,12 +35,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: denzyldic/phanalist-action@v0.1.22
+      - uses: denzyldick/phanalist-action@v0.1.22
         with:
           src: /app
 ```
 
 The `src` input is the path to your project sources (relative to workspace root).
+
+By default, the action appends each rule's full documentation to the SARIF result message, so inline pull request annotations show the same explanation as the rule page. Set `include_rule_descriptions: false` to keep the shorter violation message.
 
 ### What it does
 
