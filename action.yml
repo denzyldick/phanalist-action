@@ -6,9 +6,13 @@ branding:
   color: purple
 inputs:
   src:
-    description: "Path to project sources."
-    required: true
-    default: ".src/"
+    description: "Path to project sources, relative to the workspace root or absolute."
+    required: false
+    default: "."
+  version:
+    description: "Phanalist release to install, for example 1.2.0 or v1.2.0. Use latest for the newest release."
+    required: false
+    default: "latest"
   include_rule_descriptions:
     description: "Append each rule's full documentation to inline pull request annotations."
     required: false
@@ -16,43 +20,91 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-    - name: Download phanalist.
+    - name: Install phanalist
       shell: bash
-      run: curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
-    - name: Display version
+      env:
+        PHANALIST_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        if [ "${PHANALIST_VERSION}" = "latest" ]; then
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh | sh
+        else
+          release_version="${PHANALIST_VERSION#v}"
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/denzyldick/phanalist/main/bin/init.sh \
+            | PHANALIST_RELEASE_ROOT="https://github.com/denzyldick/phanalist/releases/download/v${release_version}/" sh
+        fi
+        "${HOME}/phanalist" --version
+    - name: Run phanalist
       shell: bash
-      run: /home/runner/phanalist --help
-    - name: Running phanalist
-      continue-on-error: true
-      shell: bash
-      run: /home/runner/phanalist --src=${GITHUB_WORKSPACE}${INPUT_SRC} --output-format=sarif | tee result.sarif
+      env:
+        PHANALIST_SRC: ${{ inputs.src }}
+      run: |
+        set -euo pipefail
+        src="${PHANALIST_SRC:-.}"
+        if [[ "${src}" != /* ]]; then
+          src="${GITHUB_WORKSPACE%/}/${src}"
+        fi
+        if [ ! -e "${src}" ]; then
+          echo "::error::Phanalist source path does not exist: ${src}"
+          exit 1
+        fi
+
+        config="${GITHUB_WORKSPACE%/}/phanalist.yaml"
+        if [ ! -f "${config}" ]; then
+          config="${RUNNER_TEMP}/phanalist.yaml"
+          rm -f "${config}"
+        fi
+
+        sarif="${RUNNER_TEMP}/phanalist.sarif"
+        rm -f "${sarif}"
+        set +e
+        (
+          cd "${GITHUB_WORKSPACE}"
+          "${HOME}/phanalist" --src "${src}" --config "${config}" --output-format sarif
+        ) > "${sarif}"
+        status=$?
+        set -e
+        if [ "${status}" -ne 0 ] && [ "${status}" -ne 70 ]; then
+          echo "::error::Phanalist failed with exit code ${status}"
+          exit "${status}"
+        fi
+        jq empty "${sarif}"
     - name: Prepare SARIF
       shell: bash
       env:
         INCLUDE_RULE_DESCRIPTIONS: ${{ inputs.include_rule_descriptions }}
       run: |
+        set -euo pipefail
+        input="${RUNNER_TEMP}/phanalist.sarif"
+        output="${RUNNER_TEMP}/phanalist-results.sarif"
         if [ "${INCLUDE_RULE_DESCRIPTIONS}" = "true" ]; then
           jq '
-            .runs[] |= (
+            .runs |= map(
               . as $run
-              | .results |= map(
-                  . as $result
-                  | ($run.tool.driver.rules[] | select(.id == $result.ruleId) | .fullDescription.text) as $desc
-                  | if ($desc // "") == "" then .
-                    elif (.message.text // "" | contains($desc)) then .
-                    else
-                      .message as $message
-                      | .message.text = (($message.text // "") + "\n\n" + $desc)
-                      | .message.markdown = (($message.markdown // $message.text // "") + "\n\n" + $desc)
-                    end
+              | .results = (
+                  [.results[]? | . as $result
+                   | (($run.tool.driver.rules // [])
+                      | map(select(.id == $result.ruleId))
+                      | first) as $rule
+                   | (($rule // {}) | .fullDescription.text? // "") as $desc
+                   | if $desc == "" then $result
+                     elif (($result.message.text // "") | contains($desc)) then $result
+                     else
+                       $result
+                       | .message.text = ((.message.text // "") + "\n\n" + $desc)
+                       | .message.markdown = (
+                           ((.message.markdown // $result.message.text // "") + "\n\n" + $desc)
+                         )
+                     end
+                  ]
                 )
             )
-          ' result.sarif > results.sarif
+          ' "${input}" > "${output}"
         else
-          cp result.sarif results.sarif
+          cp "${input}" "${output}"
         fi
+        jq empty "${output}"
     - name: Upload SARIF file
       uses: github/codeql-action/upload-sarif@v4
       with:
-        sarif_file: results.sarif
+        sarif_file: ${{ runner.temp }}/phanalist-results.sarif
