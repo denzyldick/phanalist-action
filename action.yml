@@ -86,18 +86,10 @@ runs:
                    | (($run.tool.driver.rules // [])
                       | map(select(.id == $result.ruleId))
                       | first) as $rule
-                   | (($rule // {}) | .fullDescription.text? // "") as $desc_text
-                   | (($rule // {}) | .fullDescription.markdown? // "") as $desc_md_raw
-                   | (if $desc_md_raw == "" then $desc_text else $desc_md_raw end) as $desc_md
-                   | if $desc_text == "" then $result
+                   | (($rule // {}) | .fullDescription.markdown? // .help.markdown? // .fullDescription.text? // "") as $desc_md
+                   | if $desc_md == "" then $result
                      else
                        $result
-                       | .message.text = (
-                           if (($result.message.text // "") | contains($desc_text))
-                           then $result.message.text
-                           else ((.message.text // "") + "\n\n" + $desc_text)
-                           end
-                         )
                        | .message.markdown = (
                            if (($result.message.markdown // $result.message.text // "") | contains($desc_md))
                            then ($result.message.markdown // $result.message.text)
