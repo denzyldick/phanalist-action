@@ -22,3 +22,4 @@ jobs:
           sarif="${RUNNER_TEMP}/phanalist-results.sarif"
           test -s "${sarif}"
           jq -e '.runs[0].results | length > 0' "${sarif}"
+          jq -e '[.runs[0].results[] | select((.message.markdown // "") | (contains("```") or contains("\n# ")))] | length > 0' "${sarif}"
