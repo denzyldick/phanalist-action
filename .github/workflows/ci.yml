@@ -23,3 +23,15 @@ jobs:
           test -s "${sarif}"
           jq -e '.runs[0].results | length > 0' "${sarif}"
           jq -e '[.runs[0].results[] | select((.message.markdown // "") | (contains("```") or contains("\n# ")))] | length > 0' "${sarif}"
+
+      - name: Verify PR comment body
+        shell: bash
+        run: |
+          set -euo pipefail
+          sarif="${RUNNER_TEMP}/phanalist-results.sarif"
+          ann="$(mktemp)"
+          jq '[.runs[0].results[0] | {path: .locations[0].physicalLocation.artifactLocation.uri, start_line: .locations[0].physicalLocation.region.startLine, message: .message.text}]' "$sarif" > "$ann"
+          body="$(jq -r -n --slurpfile sarif "$sarif" --slurpfile annotations "$ann" --arg alerts_url 'https://github.com/example/example/security/code-scanning?query=pr%3A1' -f scripts/build-comment.jq)"
+          printf '%s' "$body" | grep -F '<!-- phanalist-action -->'
+          printf '%s' "$body" | grep -F '<details>'
+          printf '%s' "$body" | grep -F 'Full rule documentation'

@@ -14,9 +14,13 @@ inputs:
     required: false
     default: "latest"
   include_rule_descriptions:
-    description: "Append each rule's full documentation to inline pull request annotations."
+    description: "Append each rule's full documentation to the SARIF result message. Set to false for shorter messages."
     required: false
     default: "true"
+  post_pr_comment:
+    description: "Post a PR comment with rendered full rule documentation for new alerts."
+    required: false
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -109,3 +113,15 @@ runs:
       uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: ${{ runner.temp }}/phanalist-results.sarif
+    - name: Post PR comment
+      if: ${{ inputs.post_pr_comment == 'true' && github.event_name == 'pull_request' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        SARIF_FILE: ${{ runner.temp }}/phanalist-results.sarif
+        SERVER_URL: ${{ github.server_url }}
+      run: |
+        "${GITHUB_ACTION_PATH}/scripts/pr-comment.sh" || echo "::warning::Failed to post Phanalist PR comment"

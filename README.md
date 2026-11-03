@@ -33,6 +33,8 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      checks: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: denzyldick/phanalist-action@v1
@@ -48,9 +50,13 @@ The action does not check out your repository. Run `actions/checkout` before it.
 | :--- | :--- | :--- |
 | `src` | `.` | Path to project sources, relative to the workspace root or absolute. |
 | `version` | `latest` | Phanalist release to install, for example `1.2.0` or `v1.2.0`. |
-| `include_rule_descriptions` | `true` | Append each rule's full documentation to inline pull request annotations. Set to `false` for shorter messages. |
+| `include_rule_descriptions` | `true` | Append each rule's full documentation to the SARIF result message. Set to `false` for shorter messages. |
 
-By default, the action appends each rule's full documentation to the SARIF result message, so inline pull request annotations show the same explanation as the rule page.
+| `post_pr_comment` | `false` | Post a PR comment with rendered full rule documentation for new alerts. Requires `pull-requests: write`. |
+
+By default, the action appends each rule's full documentation to the SARIF result message.
+
+GitHub does not render Markdown in code-scanning alert messages or check annotations. When `post_pr_comment` is enabled, the action posts a PR comment that renders the full rule documentation as Markdown.
 
 ### What it does
 
@@ -58,6 +64,7 @@ By default, the action appends each rule's full documentation to the SARIF resul
 2. Runs `phanalist` with SARIF output
 3. Optionally appends full rule documentation to the SARIF messages
 4. Uploads the results for GitHub code scanning
+5. Optionally posts a rendered PR comment with the new alerts and full rule documentation
 
 Results appear under the **Security** tab → **Code scanning** in your repository.
 
